@@ -1,0 +1,25 @@
+<html>
+<head>
+    <script src="../dist/LambdaEditor.js"></script>
+    <style>
+        #editor {
+            width: 800px;
+            height: 600px;
+            border: 1px solid #CCC;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Lambda Editor demo</h1>
+
+<p>The editor can be embedded in any page.</p>
+
+<div id="editor"></div>
+
+<script>
+    var editor = document.getElementById('editor');
+    Elm.embed(Elm.LambdaEditor, editor)
+</script>
+</body>
+</html>

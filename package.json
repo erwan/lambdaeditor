@@ -1,0 +1,11 @@
+{
+  "name": "LamdbaEdit",
+  "version": "0.1.0",
+  "description": "Web Editor",
+  "author": "Erwan Loisant",
+  "license": "Apache 2.0",
+  "devDependencies": {
+    "gulp": "^3.8.10",
+    "gulp-elm": "0.2.0"
+  }
+}
