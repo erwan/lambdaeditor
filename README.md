@@ -1,0 +1,4 @@
+# lambdaeditor
+
+    npm install
+    gulp
