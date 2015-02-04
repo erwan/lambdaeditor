@@ -3,15 +3,8 @@ module LambdaEditor where
 import Html (..)
 import Model (..)
 import View (..)
+import Action (..)
 import Signal
-
-type Action
-    = NoOp
-    | Insert String
-
-update : Action -> EditorState -> EditorState
-update action model =
-    model
 
 initialModel : EditorState
 initialModel = {
@@ -26,7 +19,7 @@ main : Signal Html
 main = Signal.map view model
 
 model : Signal EditorState
-model = Signal.foldp update initialModel (Signal.subscribe updates)
+model = Signal.foldp step initialModel (Signal.subscribe updates)
 
 updates : Signal.Channel Action
 updates = Signal.channel NoOp
