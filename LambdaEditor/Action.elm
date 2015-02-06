@@ -11,7 +11,7 @@ type Action
     | DeletePreviousCharacter
     | DeleteNextCharacter
 
-step : Action -> EditorState -> EditorState
-step action state =
+iterate : Action -> EditorState -> EditorState
+iterate action state =
     state
 

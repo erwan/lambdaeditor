@@ -11,6 +11,7 @@ type alias Cursor = {
 
 type alias EditorState = {
     document : Document,
-    cursor : Cursor
+    cursor : Cursor,
+    buffer: String
 }
 
