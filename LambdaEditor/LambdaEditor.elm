@@ -6,6 +6,7 @@ import Html.Attributes (..)
 import Html.Events (..)
 import Model (..)
 import Action (..)
+import Native.DrawUtils
 import Signal
 
 -- INITIAL DATA
