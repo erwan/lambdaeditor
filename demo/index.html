@@ -20,7 +20,8 @@
 
 <script>
     var editor = document.getElementById('editor');
-    Elm.embed(Elm.LambdaEditor, editor)
+    var setup = [ { type: "paragraph", text: "test", spans: []}, { type: "paragraph", text: "autre test", spans: []} ];
+    Elm.embed(Elm.LambdaEditor, editor, { setup: setup })
 </script>
 </body>
 </html>
