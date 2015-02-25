@@ -8,6 +8,21 @@ import List as L
 import Json.Decode (..)
 import Json.Encode as E
 
+
+type alias StructuredText = List StructuredBlock
+
+type alias StructuredBlock =
+  { type_: String
+  , text: String
+  , spans: List StructuredSpan
+  }
+
+type alias StructuredSpan =
+  { start: Int
+  , end: Int
+  , type_: String
+  }
+
 type alias Line = String
 
 type alias Block = { lines : List Line }
@@ -27,12 +42,33 @@ type alias EditorState =
   , buffer: String
   }
 
+
 initialState : EditorState
 initialState =
   { document = { blocks = [ ] }
   , cursor = { block = 0, x = 0 }
   , buffer = ""
   }
+
+toStructuredText : Document -> StructuredText
+toStructuredText {blocks} =
+  let
+    blockConverter b =
+      { type_ = "paragraph"
+      , text = S.concat b.lines
+      , spans = []
+      }
+  in
+    L.map blockConverter blocks
+
+fromStructuredText : StructuredText -> Document
+fromStructuredText st =
+  let
+    extractLines = .text >> (textToLines "" 800) >> Block
+    blocks = L.map extractLines st
+  in
+    { blocks = blocks }
+
 
 blocksDecoder : Decoder (List Block)
 blocksDecoder =
@@ -42,6 +78,7 @@ blockDecoder : Decoder Block
 blockDecoder =
   object1 Block
     (map (textToLines "" 800) ("text" := string))
+
 
 documentEncoder : Document -> Value
 documentEncoder {blocks} =

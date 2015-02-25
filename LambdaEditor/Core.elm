@@ -23,7 +23,7 @@ lineExtractor text style lineSize linesAcc =
         Just (currentLine, otherLines) ->
           let
             candidate = currentLine ++ (S.fromChar c)
-            candidateSize = Native.DrawUtils.sizeOf candidate style
+            candidateSize = (Native.DrawUtils.sizeOf candidate style)
           in
             if candidateSize <= lineSize then
               lineExtractor remainingText style lineSize (candidate :: otherLines)

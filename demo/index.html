@@ -4,7 +4,7 @@
     <script src="../LambdaEditor/Native/DrawUtils.js"></script>
     <style>
         #editor {
-            width: 800px;
+            width: 400px;
             height: 600px;
             border: 1px solid #CCC;
         }
@@ -20,7 +20,10 @@
 
 <script>
     var editor = document.getElementById('editor');
-    var setup = [ { type: "paragraph", text: "test", spans: []}, { type: "paragraph", text: "autre test", spans: []} ];
+    var setup = [
+        { type_: "paragraph", text: "test d'un bout de texte assez long pour voir si ça retourne à la ligne", spans: []},
+        { type_: "paragraph", text: "autre test", spans: []}
+    ];
     Elm.embed(Elm.LambdaEditor, editor, { setup: setup })
 </script>
 </body>
