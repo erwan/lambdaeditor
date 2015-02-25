@@ -49,7 +49,7 @@ Elm.Native.DrawUtils.make = function(elm) {
     }
 
     return elm.Native.DrawUtils.values = {
-        sizeOf: sizeOf,
+        sizeOf: F2(sizeOf),
         labelSize: labelSize
     };
 };
