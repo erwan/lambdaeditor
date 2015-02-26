@@ -1,7 +1,9 @@
 module Utils where
 
 import Maybe as M
+import String as S
 import List (..)
+import Debug
 
 -- Maybe
 
@@ -45,3 +47,17 @@ uncons list =
   case list of
     x :: xs -> Just (x, xs)
     [] -> Nothing
+
+unconsWord : String -> Maybe (String, String)
+unconsWord input =
+  unconsWordRec "" input
+
+unconsWordRec : String -> String -> Maybe (String, String)
+unconsWordRec acc input =
+  if S.isEmpty acc && S.isEmpty input then
+    Nothing
+  else
+    case S.uncons input of
+      Nothing -> Just(acc, "")
+      Just(' ', rest) -> Just(acc ++ (S.fromChar ' '), rest)
+      Just(c, rest) -> unconsWordRec (acc ++ (S.fromChar c)) rest

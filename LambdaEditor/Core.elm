@@ -14,19 +14,19 @@ textToLines style lineSize text =
 
 lineExtractor : String -> String -> Int -> List String -> List String
 lineExtractor text style lineSize linesAcc =
-  case S.uncons text of
+  case unconsWord text of
     Nothing ->
       linesAcc
-    Just (c, remainingText) ->
+    Just (word, remainingText) ->
       case uncons linesAcc of
         Nothing ->
           linesAcc
         Just (currentLine, otherLines) ->
           let
-            candidate = currentLine ++ (S.fromChar c)
+            candidate = currentLine ++ word
             candidateSize = Native.DrawUtils.sizeOf candidate style
           in
             if candidateSize <= lineSize then
               lineExtractor remainingText style lineSize (candidate :: otherLines)
             else
-              lineExtractor remainingText style lineSize (S.fromChar c :: linesAcc)
+              lineExtractor remainingText style lineSize (word :: linesAcc)
