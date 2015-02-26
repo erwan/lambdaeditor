@@ -1,5 +1,6 @@
 module Core where
 
+import Debug
 import Utils (..)
 import Native.DrawUtils
 

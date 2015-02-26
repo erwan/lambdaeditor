@@ -15,7 +15,9 @@ Elm.Native.DrawUtils.make = function(elm) {
         if (!os) {
             os = document.createElement("div");
             os.id = "le_offscreen";
-            os.appendChild(document.createElement("span"));
+            os.setAttribute('style', 'display: inline; position: absolute; top: 0; width: 80000px; height: 100px;');
+            var span = document.createElement("span");
+            os.appendChild(span);
             document.body.appendChild(os);
         }
         return os;
@@ -33,7 +35,7 @@ Elm.Native.DrawUtils.make = function(elm) {
         var w = cache[key];
         if (!w) {
             var toDraw = (character == ' ' | character == '\t' ? '&nbsp;' : character),
-                nToDraw = 100;
+                nToDraw = 10;
 
             var span = offscreen().firstChild;
             span.innerHTML = repeatChar(toDraw, nToDraw);
