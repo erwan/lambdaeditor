@@ -40,13 +40,54 @@ updates : Signal.Channel Action
 updates = Signal.channel NoOp
 
 
-buildLine : Line -> LineView
-buildLine line =
-  { line = line, element = T.leftAligned (T.fromString line) }
+buildText : List Span -> Int -> String -> Element
+buildText spans offset text =
+  let
+    -- keep only spans that apply to our text fragment (TODO support spans that are partially on our text fragment)
+    filteredSpans =
+      spans
+        |> L.map (\span -> { span | start <- span.start - offset, end <- span.end - offset })
+        |> L.filter (\span -> span.start > 0 && span.end < (S.length text))
+
+    -- find the next span to apply, if any (assumes that spans do not overlap each other)
+    min : List Span -> Maybe Span
+    min = L.foldl (\span maybeMin ->
+        case maybeMin of
+          Just minSpan -> if span.start < minSpan.start then Just span else Just minSpan
+          Nothing  -> Just span
+      ) Nothing
+
+    rawText = T.defaultStyle
+
+    spanStyle : SpanType -> T.Style
+    spanStyle Bold = { rawText | bold <- True }
+
+    styleString : T.Style -> String -> T.Text
+    styleString style text = T.style style (T.fromString text)
+
+    loop : List Span -> Int -> List T.Text -> List T.Text
+    loop spans_ offset_ acc =
+      case min spans_ of
+        Just span ->
+          let prefix = styleString rawText (S.slice offset_ span.start text)
+              text_ = styleString (spanStyle span.type_) (S.slice span.start span.end text)
+              remainingSpans = L.filter (\span_ -> span_ /= span) spans_
+              nextOffset = offset_ + span.end
+          in
+            [prefix, text_] ++ (loop remainingSpans nextOffset acc)
+        Nothing   -> (styleString rawText (S.dropLeft offset_ text)) :: acc
+
+    texts = loop filteredSpans 0 []
+  in
+    texts |> T.concat >> T.leftAligned
+
+buildLine : List Span -> Line -> LineView
+buildLine spans line =
+  { line = line, element = buildText spans 0 line } -- TODO Fix the offset
 
 buildBlock : Block -> BlockView
-buildBlock {lines} =
-  { lineViews = L.map buildLine lines }
+buildBlock {lines, spans} =
+  { lineViews = L.map (buildLine spans) lines }
 
 buildDocument : Document -> DocumentView
 buildDocument {blocks} =
