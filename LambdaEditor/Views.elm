@@ -158,12 +158,12 @@ buildCursor { blocks } {blockViews} cursor =
     container (pixelX + 20) (pixelY + 20) (topLeftAt (Absolute pixelX) (Absolute pixelY)) cursorElt
 
 
-hiddenInput : String -> Html
-hiddenInput content =
+hiddenInput : Html
+hiddenInput =
   input
     [ id "hidden-input"
-    , value content
-    -- , style [("display", "none")]
+    , value ""
+    , style [("position", "absolute"), ("opacity", "0"), ("width", "0")]
     , on "input" targetValue (Signal.send updatesChannel << UpdateFromBuffer)
     ] []
 
@@ -176,4 +176,4 @@ view state =
   in
     div
       [ class "lambda-editor" ]
-      [ (hiddenInput state.buffer), fromElement complete ]
+      [ hiddenInput, fromElement complete ]

@@ -37,7 +37,13 @@
       text: "autre test",
       spans: []
     }];
-    Elm.embed(Elm.LambdaEditor, editor, { setup: setup })
+    var app = Elm.embed(Elm.LambdaEditor, editor, { setup: setup })
+    document.getElementById("hidden-input").focus();
+
+    app.ports.documentUpdates.subscribe(function(v) {
+      console.log(v);
+      document.getElementById("hidden-input").focus();
+    });
 </script>
 </body>
 </html>

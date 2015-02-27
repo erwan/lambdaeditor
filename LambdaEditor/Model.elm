@@ -47,14 +47,12 @@ type alias Cursor =
 type alias EditorState =
   { document : Document
   , cursor: Cursor
-  , buffer: String
   }
 
 initialState : EditorState
 initialState =
   { document = { blocks = [ ] }
   , cursor = { block = 0, x = 200 }
-  , buffer = ""
   }
 
 blocksDecoder : Decoder (List Block)
@@ -231,13 +229,17 @@ insertAtCursor s ({cursor,document} as state) =
       Just block ->
         let
           allText = S.concat block.lines
+
           textBefore = S.left cursor.x allText
           textAfter = S.dropLeft cursor.x allText
+
           newText = S.concat [textBefore, s, textAfter]
           newLines = textToLines lineStyle lineSize newText
+
           -- TODO update block.spans
           newBlock = { block | lines <- newLines }
           allBlocks = L.concat [blocksBefore, [newBlock], blocksAfter]
+
           newDoc = { document | blocks <- allBlocks }
           newCursor = { cursor | x <- cursor.x + 1 }
         in
