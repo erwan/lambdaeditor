@@ -123,3 +123,36 @@ cursorLineRec lines posInBlock =
           (lineIndex, S.length line)
         else
           cursorLineRec rest (posInBlock - S.length line)
+
+blockLength : Block -> Int
+blockLength { lines } =
+  L.map S.length lines |> L.sum
+
+moveLeft : Document -> Cursor -> Cursor
+moveLeft { blocks } cursor =
+  if cursor.x > 0 then
+    { block = cursor.block, x = cursor.x - 1 }
+  else
+    if cursor.block > 0 then
+      let
+        newBlockIndex = cursor.block - 1
+        newBlock: Block
+        newBlock = lift newBlockIndex blocks |> M.withDefault (L.head blocks)
+      in
+        { block = newBlockIndex, x = (blockLength newBlock) }
+    else
+      { block = 0, x = 0 }
+
+moveRight : Document -> Cursor -> Cursor
+moveRight { blocks } cursor =
+  let
+    currentBlock = lift cursor.block blocks |> M.withDefault (L.head blocks)
+    currentBlockLength = blockLength currentBlock
+  in
+    if cursor.x < currentBlockLength then
+      { block = cursor.block, x = cursor.x + 1 }
+    else
+      if cursor.block < (L.length blocks) then
+        { block = cursor.block + 1, x = 0 }
+      else
+        { block = cursor.block, x = currentBlockLength }

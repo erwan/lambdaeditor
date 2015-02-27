@@ -23,4 +23,10 @@ type Action
 
 iterate : Action -> EditorState -> EditorState
 iterate action state =
-    state
+    case action of
+        MoveLeft ->
+            { state | cursor <- moveLeft state.document state.cursor }
+        MoveRight ->
+            { state | cursor <- moveRight state.document state.cursor }
+        _ -> state
+
