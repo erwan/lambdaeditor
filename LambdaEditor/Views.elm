@@ -21,6 +21,7 @@ import Signal
 
 import Native.DrawUtils
 
+
 interblock = 15
 
 cursorWidth = 2

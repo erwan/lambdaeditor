@@ -9,6 +9,7 @@ import List as L
 import Json.Decode (..)
 import Json.Encode as E
 
+
 type alias Line = String
 
 type alias Span =
@@ -43,7 +44,7 @@ type alias EditorState =
 initialState : EditorState
 initialState =
   { document = { blocks = [ ] }
-  , cursor = { block = 0, x = 0 }
+  , cursor = { block = 0, x = 200 }
   , buffer = ""
   }
 
@@ -93,28 +94,29 @@ spanEncoder {start, end, type_} =
       Bold -> "bold"
     ))
     ]
+
+{-|  get (block number, line number, position in line) of cursor in blocks -}
 cursorBlockLine: List Block -> Cursor -> (Int, Int, Int)
 cursorBlockLine blocks cursor =
   let
     blockNo = cursor.block
     block = lift blockNo blocks |> M.withDefault (L.head blocks)
-    linesWithIndex : List (Int, Line)
     linesWithIndex = (L.indexedMap (,) block.lines)
-    (line, position) = cursorLineRec linesWithIndex cursor cursor.x
+    (line, position) = cursorLineRec linesWithIndex cursor.x
   in
     (blockNo, line, position)
 
 
-cursorLineRec: List (Int, Line) -> Cursor -> Int -> (Int, Int)
-cursorLineRec lines cursor posInBlock =
+{-|  get (line, position in line) of cursor position inside a block -}
+cursorLineRec: List (Int, Line) -> Int -> (Int, Int)
+cursorLineRec lines posInBlock =
   case uncons lines of
     Nothing -> (0, 0)
-    Just ((index, first), rest) ->
-      if S.length first > posInBlock then
-        (index, S.length first - posInBlock)
+    Just ((lineIndex, line), rest) ->
+      if S.length line > posInBlock then
+        (lineIndex, posInBlock)
       else
         if L.isEmpty rest then
-          (index, S.length first)
+          (lineIndex, S.length line)
         else
-          cursorLineRec rest cursor (posInBlock - S.length first)
-
+          cursorLineRec rest (posInBlock - S.length line)

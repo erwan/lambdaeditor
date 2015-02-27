@@ -7,7 +7,7 @@ import Action (..)
 import Signal
 import Html (..)
 import Json.Decode as Json
-import Debug
+
 
 -- PORTS
 
@@ -15,7 +15,7 @@ port setup : Json.Value
 
 stateWithSetup : EditorState
 stateWithSetup =
-  case Json.decodeValue blocksDecoder (Debug.log "setup" setup) of
+  case Json.decodeValue blocksDecoder setup of
     Err e ->
        initialState
     Ok blocks ->
