@@ -2,35 +2,101 @@ module Views where
 
 import Model (..)
 import Action (..)
+import Utils (..)
 
 import List as L
+import Dict as D
+import String as S
+import Maybe as M
+
+import Graphics.Element (..)
+import Graphics.Collage (..)
+import Color (black)
+import Text as T
+
 import Html (..)
 import Html.Attributes (..)
 import Html.Events (..)
 import Signal
 
+import Native.DrawUtils
+
+interblock = 15
+
+cursorWidth = 2
+
+type alias DocumentView = List BlockView
+
+type alias BlockView = List LineView
+
+type alias LineView = {
+  line: Line,
+  element: Element
+}
 
 updates : Signal.Channel Action
 updates = Signal.channel NoOp
 
-renderLine : Line -> Html
-renderLine line =
-  div [] [ text line ]
+buildLine : Line -> LineView
+buildLine line =
+  { line = line, element = T.leftAligned (T.fromString line) }
 
-renderBlock : Block -> Html
-renderBlock {lines} =
-  div [] (L.map renderLine lines)
+buildBlock : Block -> BlockView
+buildBlock {lines} =
+  L.map buildLine lines
 
-renderDocument : Document -> List Html
-renderDocument {blocks} =
-  L.map renderBlock blocks
+buildDocument : Document -> DocumentView
+buildDocument {blocks} =
+  L.map buildBlock blocks
 
--- renderCursor : Document -> Cursor -> Html
--- renderCursor { blocks } cursor =
---  let
---    (blockNo, lineNo, posInLine) = cursorBlockLine blocks cursor
---  in
+renderBlock : BlockView -> Element
+renderBlock lineViews =
+  flow down (L.map .element lineViews)
 
+renderDocument : DocumentView -> Element
+renderDocument blockViews =
+  flow down (L.intersperse (spacer interblock interblock) (L.map renderBlock blockViews))
+
+lineViewHeight : LineView -> Int
+lineViewHeight lineView =
+  heightOf lineView.element
+
+linePositions : Line -> List Int
+linePositions line =
+  let
+    length = S.length line
+    substrings = L.map (\i -> S.left i line) [0..length]
+  in
+    L.map (\s -> Native.DrawUtils.sizeOf s "") substrings
+
+blockViewHeight : BlockView -> Int
+blockViewHeight blockView =
+  L.map lineViewHeight blockView |> L.sum
+
+cursorElement : Int -> Element
+cursorElement height =
+  rect (toFloat cursorWidth) (toFloat height)
+  |> filled black
+  |> (\f -> [f])
+  |> collage cursorWidth height
+
+buildCursor : Document -> DocumentView -> Cursor -> Element
+buildCursor { blocks } blockViews cursor =
+  let
+    (blockNo, lineNo, posInLine) = cursorBlockLine blocks cursor
+
+    blocksBefore = L.take blockNo blockViews
+    linesBefore = L.take lineNo blockView
+
+    blockView = lift blockNo blockViews |> M.withDefault (L.head blockViews)
+    lineView = lift lineNo blockView |> M.withDefault (L.head blockView)
+
+    pixelX = lift posInLine (linePositions lineView.line) |> M.withDefault 0
+    pixelY = (L.map blockViewHeight blocksBefore |> L.sum) + (blockNo * interblock) + (L.map lineViewHeight linesBefore |> L.sum)
+
+    cursorElt = cursorElement (lineViewHeight lineView)
+  in
+    T.leftAligned <| T.fromString ((toString pixelX) ++ "," ++ (toString pixelY))
 
 
 hiddenInput : String -> Html
@@ -44,6 +110,11 @@ hiddenInput content =
 
 view : EditorState -> Html
 view state =
-  div
-    [ class "lambda-editor" ]
-    ((hiddenInput state.buffer) :: (renderDocument state.document))
+  let
+    documentView = buildDocument state.document
+    cursorView = buildCursor state.document documentView state.cursor
+    complete = layers [(renderDocument documentView), cursorView]
+  in
+    div
+      [ class "lambda-editor" ]
+      [ (hiddenInput state.buffer), fromElement complete ]
