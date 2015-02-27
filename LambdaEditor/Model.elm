@@ -11,7 +11,7 @@ import Json.Encode as E
 
 -- temp hardcoded values
 lineSize = 800
-lineStyle = ""
+-- lineStyle = ""
 
 type alias Line = String
 
@@ -61,13 +61,16 @@ blocksDecoder =
 
 blockDecoder : Decoder Block
 blockDecoder =
-  object3 Block
-     linesDecoder
-     ("spans" := list spanDecoder)
-     ("type" := blockTypeDecoder)
+  ("type" := blockTypeDecoder) `andThen` (\type_ ->
+    object3 Block
+      (linesDecoder type_)
+      ("spans" := list spanDecoder)
+      (succeed type_)
+  )
 
-linesDecoder : Decoder (List Line)
-linesDecoder = map (textToLines lineStyle lineSize) ("text" := string)
+linesDecoder : BlockType -> Decoder (List Line)
+linesDecoder blockType =
+  map (textToLines (blockStyle blockType) lineSize) ("text" := string)
 
 spanDecoder : Decoder Span
 spanDecoder =
@@ -91,6 +94,14 @@ blockTypeDecoder =
     "section"   -> succeed Section
     _           -> fail "invalid block type"
   )
+
+-- HACK compute a style attribute based on the style we assume Elm generates
+-- It duplicates the code that is currently in Views.
+blockStyle : BlockType -> String
+blockStyle blockType =
+  case blockType of
+    Paragraph -> ""
+    Section -> "font-size: 24px;"
 
 documentEncoder : Document -> Value
 documentEncoder {blocks} =
@@ -234,7 +245,7 @@ insertAtCursor s ({cursor,document} as state) =
           textAfter = S.dropLeft cursor.x allText
 
           newText = S.concat [textBefore, s, textAfter]
-          newLines = textToLines lineStyle lineSize newText
+          newLines = textToLines (blockStyle block.type_) lineSize newText
 
           -- TODO update block.spans
           newBlock = { block | lines <- newLines }
