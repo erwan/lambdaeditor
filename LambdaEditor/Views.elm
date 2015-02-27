@@ -36,8 +36,8 @@ type alias LineView = {
 }
 
 
-updates : Signal.Channel Action
-updates = Signal.channel NoOp
+updatesChannel : Signal.Channel Action
+updatesChannel = Signal.channel NoOp
 
 rawText = T.defaultStyle
 
@@ -159,7 +159,7 @@ hiddenInput content =
     [ id "hidden-input"
     , value content
     , style [("display", "none")]
-    , on "input" targetValue (Signal.send updates << UpdateFromBuffer)
+    , on "input" targetValue (Signal.send updatesChannel << UpdateFromBuffer)
     ] []
 
 view : EditorState -> Html

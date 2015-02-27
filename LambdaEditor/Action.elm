@@ -3,6 +3,7 @@ module Action where
 import Model (..)
 import Utils (..)
 import Native.DrawUtils
+import Debug
 
 import String as S
 import List as L
@@ -17,6 +18,8 @@ type Action
     | MergeBlocks
     | DeletePreviousCharacter
     | DeleteNextCharacter
+    | MoveLeft
+    | MoveRight
 
 iterate : Action -> EditorState -> EditorState
 iterate action state =
