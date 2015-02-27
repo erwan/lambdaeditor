@@ -25,17 +25,19 @@ interblock = 15
 
 cursorWidth = 2
 
-type alias DocumentView = List BlockView
+type alias DocumentView = { blockViews: List BlockView }
 
-type alias BlockView = List LineView
+type alias BlockView = { lineViews: List LineView }
 
 type alias LineView = {
   line: Line,
   element: Element
 }
 
+
 updates : Signal.Channel Action
 updates = Signal.channel NoOp
+
 
 buildLine : Line -> LineView
 buildLine line =
@@ -43,19 +45,21 @@ buildLine line =
 
 buildBlock : Block -> BlockView
 buildBlock {lines} =
-  L.map buildLine lines
+  { lineViews = L.map buildLine lines }
 
 buildDocument : Document -> DocumentView
 buildDocument {blocks} =
-  L.map buildBlock blocks
+  { blockViews = L.map buildBlock blocks }
+
 
 renderBlock : BlockView -> Element
-renderBlock lineViews =
+renderBlock {lineViews} =
   flow down (L.map .element lineViews)
 
 renderDocument : DocumentView -> Element
-renderDocument blockViews =
+renderDocument {blockViews} =
   flow down (L.intersperse (spacer interblock interblock) (L.map renderBlock blockViews))
+
 
 lineViewHeight : LineView -> Int
 lineViewHeight lineView =
@@ -71,7 +75,7 @@ linePositions line =
 
 blockViewHeight : BlockView -> Int
 blockViewHeight blockView =
-  L.map lineViewHeight blockView |> L.sum
+  L.map lineViewHeight blockView.lineViews |> L.sum
 
 cursorElement : Int -> Element
 cursorElement height =
@@ -81,15 +85,15 @@ cursorElement height =
   |> collage cursorWidth height
 
 buildCursor : Document -> DocumentView -> Cursor -> Element
-buildCursor { blocks } blockViews cursor =
+buildCursor { blocks } {blockViews} cursor =
   let
     (blockNo, lineNo, posInLine) = cursorBlockLine blocks cursor
 
     blocksBefore = L.take blockNo blockViews
-    linesBefore = L.take lineNo blockView
-
     blockView = lift blockNo blockViews |> M.withDefault (L.head blockViews)
-    lineView = lift lineNo blockView |> M.withDefault (L.head blockView)
+
+    linesBefore = L.take lineNo blockView.lineViews
+    lineView = lift lineNo blockView.lineViews |> M.withDefault (L.head blockView.lineViews)
 
     pixelX = lift posInLine (linePositions lineView.line) |> M.withDefault 0
     pixelY = (L.map blockViewHeight blocksBefore |> L.sum) + (blockNo * interblock) + (L.map lineViewHeight linesBefore |> L.sum)
