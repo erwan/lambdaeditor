@@ -47,11 +47,17 @@ spanStyle style =
     Bold   -> { rawText | bold <- True }
     Italic -> { rawText | italic <- True }
 
+blockStyle : BlockType -> T.Style
+blockStyle type_ =
+  case type_ of
+    Paragraph -> rawText
+    Section   -> { rawText | height <- Just 24 }
+
 styleString : T.Style -> String -> T.Text
 styleString style text = T.style style (T.fromString text)
 
-buildText : List Span -> Int -> String -> Element
-buildText spans offset text =
+buildText : List Span -> BlockType -> Int -> String -> Element
+buildText spans blockType offset text =
   let
     -- keep only spans that apply to our text fragment (TODO support spans that are partially on our text fragment)
     filteredSpans =
@@ -81,11 +87,11 @@ buildText spans offset text =
 
     texts = loop filteredSpans 0 []
   in
-    texts |> T.concat >> T.leftAligned
+    texts |> T.concat >> T.style (blockStyle blockType) >> T.leftAligned
 
-buildLine : List Span -> (Line, Int) -> LineView
-buildLine spans (line, offset) =
-  { line = line, element = buildText spans offset line }
+buildLine : List Span -> BlockType -> (Line, Int) -> LineView
+buildLine spans blockType (line, offset) =
+  { line = line, element = buildText spans blockType offset line }
 
 offsetLines : Int -> List Line -> List (Line, Int)
 offsetLines offset lines =
@@ -94,18 +100,12 @@ offsetLines offset lines =
     []             -> []
 
 buildBlock : Block -> BlockView
-buildBlock {lines, spans} =
-  { lineViews = L.map (buildLine spans) (offsetLines 0 lines) }
+buildBlock {lines, spans, type_} =
+  { lineViews = L.map (buildLine spans type_) (offsetLines 0 lines) }
 
 buildDocument : Document -> DocumentView
 buildDocument {blocks} =
   { blockViews = L.map buildBlock blocks }
-
-blockStyle : BlockType -> T.Style
-blockStyle type_ =
-  case type_ of
-    Paragraph -> rawText
-    Section   -> { rawText | height <- Just 20 }
 
 renderBlock : BlockView -> Element
 renderBlock {lineViews} =
