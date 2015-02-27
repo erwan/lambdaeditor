@@ -4380,14 +4380,29 @@ Elm.Model.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $String = Elm.String.make(_elm),
    $Utils = Elm.Utils.make(_elm);
-   var blockLength = function (_v0) {
+   var insertInSpan = F2(function (x,
+   _v0) {
+      return function () {
+         return function () {
+            var newEnd = _U.cmp(x,
+            _v0.end) > 0 ? _v0.end : _v0.end + 1;
+            var newStart = _U.cmp(x,
+            _v0.start) > 0 ? _v0.start : _v0.start + 1;
+            return _U.replace([["start"
+                               ,newStart]
+                              ,["end",newEnd]],
+            _v0);
+         }();
+      }();
+   });
+   var blockLength = function (_v2) {
       return function () {
          return $List.sum(A2($List.map,
          $String.length,
-         _v0.lines));
+         _v2.lines));
       }();
    };
-   var moveLeft = F2(function (_v2,
+   var moveLeft = F2(function (_v4,
    cursor) {
       return function () {
          return _U.cmp(cursor.x,
@@ -4396,28 +4411,28 @@ Elm.Model.make = function (_elm) {
                   ,x: cursor.x - 1} : _U.cmp(cursor.block,
          0) > 0 ? function () {
             var newBlockIndex = cursor.block - 1;
-            var newBlock = $Maybe.withDefault($List.head(_v2.blocks))(A2($Utils.lift,
+            var newBlock = $Maybe.withDefault($List.head(_v4.blocks))(A2($Utils.lift,
             newBlockIndex,
-            _v2.blocks));
+            _v4.blocks));
             return {_: {}
                    ,block: newBlockIndex
                    ,x: blockLength(newBlock)};
          }() : {_: {},block: 0,x: 0};
       }();
    });
-   var moveRight = F2(function (_v4,
+   var moveRight = F2(function (_v6,
    cursor) {
       return function () {
          return function () {
-            var currentBlock = $Maybe.withDefault($List.head(_v4.blocks))(A2($Utils.lift,
+            var currentBlock = $Maybe.withDefault($List.head(_v6.blocks))(A2($Utils.lift,
             cursor.block,
-            _v4.blocks));
+            _v6.blocks));
             var currentBlockLength = blockLength(currentBlock);
             return _U.cmp(cursor.x,
             currentBlockLength) < 0 ? {_: {}
                                       ,block: cursor.block
                                       ,x: cursor.x + 1} : _U.cmp(cursor.block,
-            $List.length(_v4.blocks)) < 0 ? {_: {}
+            $List.length(_v6.blocks)) < 0 ? {_: {}
                                             ,block: cursor.block + 1
                                             ,x: 0} : {_: {}
                                                      ,block: cursor.block
@@ -4428,21 +4443,21 @@ Elm.Model.make = function (_elm) {
    var cursorLineRec = F2(function (lines,
    posInBlock) {
       return function () {
-         var _v6 = $Utils.uncons(lines);
-         switch (_v6.ctor)
+         var _v8 = $Utils.uncons(lines);
+         switch (_v8.ctor)
          {case "Just":
-            switch (_v6._0.ctor)
+            switch (_v8._0.ctor)
               {case "_Tuple2":
-                 switch (_v6._0._0.ctor)
+                 switch (_v8._0._0.ctor)
                    {case "_Tuple2":
-                      return _U.cmp($String.length(_v6._0._0._1),
+                      return _U.cmp($String.length(_v8._0._0._1),
                         posInBlock) > 0 ? {ctor: "_Tuple2"
-                                          ,_0: _v6._0._0._0
-                                          ,_1: posInBlock} : $List.isEmpty(_v6._0._1) ? {ctor: "_Tuple2"
-                                                                                        ,_0: _v6._0._0._0
-                                                                                        ,_1: $String.length(_v6._0._0._1)} : A2(cursorLineRec,
-                        _v6._0._1,
-                        posInBlock - $String.length(_v6._0._0._1));}
+                                          ,_0: _v8._0._0._0
+                                          ,_1: posInBlock} : $List.isEmpty(_v8._0._1) ? {ctor: "_Tuple2"
+                                                                                        ,_0: _v8._0._0._0
+                                                                                        ,_1: $String.length(_v8._0._0._1)} : A2(cursorLineRec,
+                        _v8._0._1,
+                        posInBlock - $String.length(_v8._0._0._1));}
                    break;}
               break;
             case "Nothing":
@@ -4450,7 +4465,7 @@ Elm.Model.make = function (_elm) {
                    ,_0: 0
                    ,_1: 0};}
          _U.badCase($moduleName,
-         "between lines 138 and 147");
+         "between lines 147 and 156");
       }();
    });
    var cursorBlockLine = F2(function (blocks,
@@ -4478,40 +4493,40 @@ Elm.Model.make = function (_elm) {
                 ,_2: position};
       }();
    });
-   var moveUp = F2(function (_v12,
+   var moveUp = F2(function (_v14,
    cursor) {
       return function () {
          return function () {
             var $ = A2(cursorBlockLine,
-            _v12.blocks,
+            _v14.blocks,
             cursor),
             blockNo = $._0,
             lineNo = $._1,
             posInLine = $._2;
-            var $ = $Maybe.withDefault($List.head(_v12.blocks))(A2($Utils.lift,
+            var $ = $Maybe.withDefault($List.head(_v14.blocks))(A2($Utils.lift,
             blockNo,
-            _v12.blocks)),
+            _v14.blocks)),
             lines = $.lines;
             return function () {
-               var _v14 = {ctor: "_Tuple2"
+               var _v16 = {ctor: "_Tuple2"
                           ,_0: blockNo
                           ,_1: lineNo};
-               switch (_v14.ctor)
+               switch (_v16.ctor)
                {case "_Tuple2":
-                  switch (_v14._0)
-                    {case 0: switch (_v14._1)
+                  switch (_v16._0)
+                    {case 0: switch (_v16._1)
                          {case 0: return {_: {}
                                          ,block: 0
                                          ,x: 0};}
                          break;}
-                    switch (_v14._1)
+                    switch (_v16._1)
                     {case 0: return function () {
                             var newBlockNo = A2($Basics.min,
                             0,
                             blockNo - 1);
-                            var newBlock = $Maybe.withDefault($List.head(_v12.blocks))(A2($Utils.lift,
+                            var newBlock = $Maybe.withDefault($List.head(_v14.blocks))(A2($Utils.lift,
                             newBlockNo,
-                            _v12.blocks));
+                            _v14.blocks));
                             var startLastLine = $List.sum(A2($List.map,
                             $String.length,
                             A2($List.take,
@@ -4536,20 +4551,20 @@ Elm.Model.make = function (_elm) {
          }();
       }();
    });
-   var moveDown = F2(function (_v17,
+   var moveDown = F2(function (_v19,
    cursor) {
       return function () {
          return function () {
-            var lastBlockNo = $List.length(_v17.blocks) - 1;
+            var lastBlockNo = $List.length(_v19.blocks) - 1;
             var $ = A2(cursorBlockLine,
-            _v17.blocks,
+            _v19.blocks,
             cursor),
             blockNo = $._0,
             lineNo = $._1,
             posInLine = $._2;
-            var block = $Maybe.withDefault($List.head(_v17.blocks))(A2($Utils.lift,
+            var block = $Maybe.withDefault($List.head(_v19.blocks))(A2($Utils.lift,
             blockNo,
-            _v17.blocks));
+            _v19.blocks));
             var line = $Maybe.withDefault($List.head(block.lines))(A2($Utils.lift,
             lineNo,
             block.lines));
@@ -4565,71 +4580,78 @@ Elm.Model.make = function (_elm) {
          }();
       }();
    });
-   var spanEncoder = function (_v19) {
+   var spanEncoder = function (_v21) {
       return function () {
          return $Json$Encode.object(_L.fromArray([{ctor: "_Tuple2"
                                                   ,_0: "start"
-                                                  ,_1: $Json$Encode.$int(_v19.start)}
+                                                  ,_1: $Json$Encode.$int(_v21.start)}
                                                  ,{ctor: "_Tuple2"
                                                   ,_0: "end"
-                                                  ,_1: $Json$Encode.$int(_v19.end)}
+                                                  ,_1: $Json$Encode.$int(_v21.end)}
                                                  ,{ctor: "_Tuple2"
                                                   ,_0: "type"
                                                   ,_1: $Json$Encode.string(function () {
-                                                     var _v21 = _v19.type_;
-                                                     switch (_v21.ctor)
+                                                     var _v23 = _v21.type_;
+                                                     switch (_v23.ctor)
                                                      {case "Bold":
                                                         return "bold";
                                                         case "Italic":
                                                         return "italic";}
                                                      _U.badCase($moduleName,
-                                                     "between lines 117 and 120");
+                                                     "between lines 126 and 129");
                                                   }())}]));
       }();
    };
-   var blockEncoder = function (_v22) {
+   var blockEncoder = function (_v24) {
       return function () {
          return $Json$Encode.object(_L.fromArray([{ctor: "_Tuple2"
                                                   ,_0: "type"
                                                   ,_1: $Json$Encode.string(function () {
-                                                     var _v24 = _v22.type_;
-                                                     switch (_v24.ctor)
+                                                     var _v26 = _v24.type_;
+                                                     switch (_v26.ctor)
                                                      {case "Paragraph":
                                                         return "paragraph";
                                                         case "Section":
                                                         return "section";}
                                                      _U.badCase($moduleName,
-                                                     "between lines 104 and 107");
+                                                     "between lines 113 and 116");
                                                   }())}
                                                  ,{ctor: "_Tuple2"
                                                   ,_0: "text"
-                                                  ,_1: $Json$Encode.string($String.concat(_v22.lines))}
+                                                  ,_1: $Json$Encode.string($String.concat(_v24.lines))}
                                                  ,{ctor: "_Tuple2"
                                                   ,_0: "spans"
                                                   ,_1: $Json$Encode.list(A2($List.map,
                                                   spanEncoder,
-                                                  _v22.spans))}]));
+                                                  _v24.spans))}]));
       }();
    };
-   var documentEncoder = function (_v25) {
+   var documentEncoder = function (_v27) {
       return function () {
          return $Json$Encode.object(_L.fromArray([{ctor: "_Tuple2"
                                                   ,_0: "blocks"
                                                   ,_1: $Json$Encode.list(A2($List.map,
                                                   blockEncoder,
-                                                  _v25.blocks))}]));
+                                                  _v27.blocks))}]));
+      }();
+   };
+   var blockStyle = function (blockType) {
+      return function () {
+         switch (blockType.ctor)
+         {case "Paragraph": return "";
+            case "Section":
+            return "font-size: 24px;";}
+         _U.badCase($moduleName,
+         "between lines 102 and 104");
       }();
    };
    var initialState = {_: {}
-                      ,buffer: ""
                       ,cursor: {_: {},block: 0,x: 200}
                       ,document: {_: {}
                                  ,blocks: _L.fromArray([])}};
-   var EditorState = F3(function (a,
-   b,
-   c) {
+   var EditorState = F2(function (a,
+   b) {
       return {_: {}
-             ,buffer: c
              ,cursor: b
              ,document: a};
    });
@@ -4692,83 +4714,91 @@ Elm.Model.make = function (_elm) {
    A2($Json$Decode._op[":="],
    "type",
    spanTypeDecoder));
-   var lineStyle = "";
    var lineSize = 800;
-   var linesDecoder = A2($Json$Decode.map,
-   A2($Core.textToLines,
-   lineStyle,
-   lineSize),
-   A2($Json$Decode._op[":="],
-   "text",
-   $Json$Decode.string));
-   var blockDecoder = A4($Json$Decode.object3,
-   Block,
-   linesDecoder,
-   A2($Json$Decode._op[":="],
-   "spans",
-   $Json$Decode.list(spanDecoder)),
+   var linesDecoder = function (blockType) {
+      return A2($Json$Decode.map,
+      A2($Core.textToLines,
+      blockStyle(blockType),
+      lineSize),
+      A2($Json$Decode._op[":="],
+      "text",
+      $Json$Decode.string));
+   };
+   var blockDecoder = A2($Json$Decode.andThen,
    A2($Json$Decode._op[":="],
    "type",
-   blockTypeDecoder));
+   blockTypeDecoder),
+   function (type_) {
+      return A4($Json$Decode.object3,
+      Block,
+      linesDecoder(type_),
+      A2($Json$Decode._op[":="],
+      "spans",
+      $Json$Decode.list(spanDecoder)),
+      $Json$Decode.succeed(type_));
+   });
    var blocksDecoder = $Json$Decode.list(blockDecoder);
    var insertAtCursor = F2(function (s,
-   _v29) {
+   _v32) {
       return function () {
          return function () {
             var cursorBlockMaybe = A2($Utils.lift,
-            _v29.cursor.block,
-            _v29.document.blocks);
+            _v32.cursor.block,
+            _v32.document.blocks);
             var blocksAfter = A2($List.drop,
-            _v29.cursor.block + 1,
-            _v29.document.blocks);
+            _v32.cursor.block + 1,
+            _v32.document.blocks);
             var blocksBefore = A2($List.take,
-            _v29.cursor.block,
-            _v29.document.blocks);
+            _v32.cursor.block,
+            _v32.document.blocks);
             return function () {
                switch (cursorBlockMaybe.ctor)
                {case "Just":
                   return function () {
                        var newCursor = _U.replace([["x"
-                                                   ,_v29.cursor.x + 1]],
-                       _v29.cursor);
+                                                   ,_v32.cursor.x + 1]],
+                       _v32.cursor);
+                       var newSpans = A2($List.map,
+                       insertInSpan(_v32.cursor.x),
+                       cursorBlockMaybe._0.spans);
                        var allText = $String.concat(cursorBlockMaybe._0.lines);
                        var textBefore = A2($String.left,
-                       _v29.cursor.x,
+                       _v32.cursor.x,
                        allText);
                        var textAfter = A2($String.dropLeft,
-                       _v29.cursor.x,
+                       _v32.cursor.x,
                        allText);
                        var newText = $String.concat(_L.fromArray([textBefore
                                                                  ,s
                                                                  ,textAfter]));
                        var newLines = A3($Core.textToLines,
-                       lineStyle,
+                       blockStyle(cursorBlockMaybe._0.type_),
                        lineSize,
                        newText);
                        var newBlock = _U.replace([["lines"
-                                                  ,newLines]],
+                                                  ,newLines]
+                                                 ,["spans",newSpans]],
                        cursorBlockMaybe._0);
                        var allBlocks = $List.concat(_L.fromArray([blocksBefore
                                                                  ,_L.fromArray([newBlock])
                                                                  ,blocksAfter]));
                        var newDoc = _U.replace([["blocks"
                                                 ,allBlocks]],
-                       _v29.document);
+                       _v32.document);
                        return _U.replace([["document"
                                           ,newDoc]
                                          ,["cursor",newCursor]],
-                       _v29);
+                       _v32);
                     }();
-                  case "Nothing": return _v29;}
+                  case "Nothing": return _v32;}
                _U.badCase($moduleName,
-               "between lines 228 and 244");
+               "between lines 237 and 258");
             }();
          }();
       }();
    });
    _elm.Model.values = {_op: _op
                        ,lineSize: lineSize
-                       ,lineStyle: lineStyle
                        ,Span: Span
                        ,Bold: Bold
                        ,Italic: Italic
@@ -4785,6 +4815,7 @@ Elm.Model.make = function (_elm) {
                        ,spanDecoder: spanDecoder
                        ,spanTypeDecoder: spanTypeDecoder
                        ,blockTypeDecoder: blockTypeDecoder
+                       ,blockStyle: blockStyle
                        ,documentEncoder: documentEncoder
                        ,blockEncoder: blockEncoder
                        ,spanEncoder: spanEncoder
@@ -4795,7 +4826,8 @@ Elm.Model.make = function (_elm) {
                        ,moveRight: moveRight
                        ,moveUp: moveUp
                        ,moveDown: moveDown
-                       ,insertAtCursor: insertAtCursor};
+                       ,insertAtCursor: insertAtCursor
+                       ,insertInSpan: insertInSpan};
    return _elm.Model.values;
 };
 Elm.Native.Array = {};
@@ -12515,18 +12547,25 @@ Elm.Views.make = function (_elm) {
       }();
    };
    var updatesChannel = $Signal.channel($Action.NoOp);
-   var hiddenInput = function (content) {
-      return A2($Html.input,
-      _L.fromArray([$Html$Attributes.id("hidden-input")
-                   ,$Html$Attributes.value(content)
-                   ,A3($Html$Events.on,
-                   "input",
-                   $Html$Events.targetValue,
-                   function ($) {
-                      return $Signal.send(updatesChannel)($Action.UpdateFromBuffer($));
-                   })]),
-      _L.fromArray([]));
-   };
+   var hiddenInput = A2($Html.input,
+   _L.fromArray([$Html$Attributes.id("hidden-input")
+                ,$Html$Attributes.value("")
+                ,$Html$Attributes.style(_L.fromArray([{ctor: "_Tuple2"
+                                                      ,_0: "position"
+                                                      ,_1: "absolute"}
+                                                     ,{ctor: "_Tuple2"
+                                                      ,_0: "opacity"
+                                                      ,_1: "0"}
+                                                     ,{ctor: "_Tuple2"
+                                                      ,_0: "width"
+                                                      ,_1: "0"}]))
+                ,A3($Html$Events.on,
+                "input",
+                $Html$Events.targetValue,
+                function ($) {
+                   return $Signal.send(updatesChannel)($Action.UpdateFromBuffer($));
+                })]),
+   _L.fromArray([]));
    var LineView = F2(function (a,
    b) {
       return {_: {}
@@ -12618,7 +12657,7 @@ Elm.Views.make = function (_elm) {
                                                               ,cursorView]));
          return A2($Html.div,
          _L.fromArray([$Html$Attributes.$class("lambda-editor")]),
-         _L.fromArray([hiddenInput(state.buffer)
+         _L.fromArray([hiddenInput
                       ,$Html.fromElement(complete)]));
       }();
    };
