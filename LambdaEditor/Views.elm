@@ -158,7 +158,7 @@ hiddenInput content =
   input
     [ id "hidden-input"
     , value content
-    , style [("display", "none")]
+    -- , style [("display", "none")]
     , on "input" targetValue (Signal.send updatesChannel << UpdateFromBuffer)
     ] []
 

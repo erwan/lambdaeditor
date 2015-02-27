@@ -9,6 +9,9 @@ import List as L
 import Json.Decode (..)
 import Json.Encode as E
 
+-- temp hardcoded values
+lineSize = 800
+lineStyle = ""
 
 type alias Line = String
 
@@ -58,7 +61,7 @@ blockDecoder =
   object2 Block linesDecoder ("spans" := list spanDecoder)
 
 linesDecoder : Decoder (List Line)
-linesDecoder = map (textToLines "" 800) ("text" := string)
+linesDecoder = map (textToLines lineStyle lineSize) ("text" := string)
 
 spanDecoder : Decoder Span
 spanDecoder =
@@ -196,3 +199,27 @@ moveDown { blocks } cursor =
     else
       { block = blockNo, x = cursor.x + (S.length line) }
 
+insertAtCursor : String -> EditorState -> EditorState
+insertAtCursor s ({cursor,document} as state) =
+  let
+    blocksBefore = L.take cursor.block document.blocks
+    blocksAfter = L.drop (cursor.block + 1) document.blocks
+    cursorBlockMaybe = lift cursor.block document.blocks
+  in
+    case cursorBlockMaybe of
+      Nothing ->
+        state
+      Just block ->
+        let
+          allText = S.concat block.lines
+          textBefore = S.left cursor.x allText
+          textAfter = S.dropLeft cursor.x allText
+          newText = S.concat [textBefore, s, textAfter]
+          newLines = textToLines lineStyle lineSize newText
+          -- TODO update block.spans
+          newBlock = { block | lines <- newLines }
+          allBlocks = L.concat [blocksBefore, [newBlock], blocksAfter]
+          newDoc = { document | blocks <- allBlocks }
+          newCursor = { cursor | x <- cursor.x + 1 }
+        in
+          { state | document <- newDoc, cursor <- newCursor }

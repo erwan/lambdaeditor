@@ -25,14 +25,15 @@ type Action
 
 iterate : Action -> EditorState -> EditorState
 iterate action state =
-    case action of
-        MoveLeft ->
-            { state | cursor <- moveLeft state.document state.cursor }
-        MoveRight ->
-            { state | cursor <- moveRight state.document state.cursor }
-        MoveUp ->
-            { state | cursor <- moveUp state.document state.cursor }
-        MoveDown ->
-            { state | cursor <- moveDown state.document state.cursor }
-        _ -> state
-
+  case action of
+    MoveLeft ->
+      { state | cursor <- moveLeft state.document state.cursor }
+    MoveRight ->
+      { state | cursor <- moveRight state.document state.cursor }
+    MoveUp ->
+      { state | cursor <- moveUp state.document state.cursor }
+    MoveDown ->
+      { state | cursor <- moveDown state.document state.cursor }
+    UpdateFromBuffer s ->
+      insertAtCursor s state
+    _ -> state
