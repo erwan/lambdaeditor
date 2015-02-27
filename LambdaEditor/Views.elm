@@ -39,6 +39,16 @@ type alias LineView = {
 updates : Signal.Channel Action
 updates = Signal.channel NoOp
 
+rawText = T.defaultStyle
+
+spanStyle : SpanType -> T.Style
+spanStyle style =
+  case style of
+    Bold   -> { rawText | bold <- True }
+    Italic -> { rawText | italic <- True }
+
+styleString : T.Style -> String -> T.Text
+styleString style text = T.style style (T.fromString text)
 
 buildText : List Span -> Int -> String -> Element
 buildText spans offset text =
@@ -56,17 +66,6 @@ buildText spans offset text =
           Just minSpan -> if span.start < minSpan.start then Just span else Just minSpan
           Nothing  -> Just span
       ) Nothing
-
-    rawText = T.defaultStyle
-
-    spanStyle : SpanType -> T.Style
-    spanStyle style =
-      case style of
-        Bold   -> { rawText | bold <- True }
-        Italic -> { rawText | italic <- True }
-
-    styleString : T.Style -> String -> T.Text
-    styleString style text = T.style style (T.fromString text)
 
     loop : List Span -> Int -> List T.Text -> List T.Text
     loop spans_ offset_ acc =
