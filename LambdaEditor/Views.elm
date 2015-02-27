@@ -25,6 +25,14 @@ renderDocument : Document -> List Html
 renderDocument {blocks} =
   L.map renderBlock blocks
 
+-- renderCursor : Document -> Cursor -> Html
+-- renderCursor { blocks } cursor =
+--  let
+--    (blockNo, lineNo, posInLine) = cursorBlockLine blocks cursor
+--  in
+
+
+
 hiddenInput : String -> Html
 hiddenInput content =
   input
