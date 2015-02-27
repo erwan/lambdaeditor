@@ -81,13 +81,19 @@ buildText spans offset text =
   in
     texts |> T.concat >> T.leftAligned
 
-buildLine : List Span -> Line -> LineView
-buildLine spans line =
-  { line = line, element = buildText spans 0 line } -- TODO Fix the offset
+buildLine : List Span -> (Line, Int) -> LineView
+buildLine spans (line, offset) =
+  { line = line, element = buildText spans offset line }
+
+offsetLines : Int -> List Line -> List (Line, Int)
+offsetLines offset lines =
+  case lines of
+    line :: lines_ -> (line, offset) :: (offsetLines (offset + (S.length line)) lines_)
+    []             -> []
 
 buildBlock : Block -> BlockView
 buildBlock {lines, spans} =
-  { lineViews = L.map (buildLine spans) lines }
+  { lineViews = L.map (buildLine spans) (offsetLines 0 lines) }
 
 buildDocument : Document -> DocumentView
 buildDocument {blocks} =
