@@ -60,7 +60,10 @@ buildText spans offset text =
     rawText = T.defaultStyle
 
     spanStyle : SpanType -> T.Style
-    spanStyle Bold = { rawText | bold <- True }
+    spanStyle style =
+      case style of
+        Bold   -> { rawText | bold <- True }
+        Italic -> { rawText | italic <- True }
 
     styleString : T.Style -> String -> T.Text
     styleString style text = T.style style (T.fromString text)

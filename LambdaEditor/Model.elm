@@ -20,6 +20,7 @@ type alias Span =
 
 type SpanType
   = Bold -- just bold for now
+  | Italic
 
 type alias Block =
   { lines : List Line
@@ -69,8 +70,9 @@ spanDecoder =
 spanTypeDecoder : Decoder SpanType
 spanTypeDecoder =
   string `andThen` (\s -> case s of
-    "bold" -> succeed Bold
-    _      -> fail "invalid span type"
+    "bold"   -> succeed Bold
+    "italic" -> succeed Italic
+    _        -> fail "invalid span type"
   )
 
 documentEncoder : Document -> Value
@@ -91,7 +93,8 @@ spanEncoder {start, end, type_} =
     [ ("start", E.int start)
     , ("end", E.int end)
     , ("type", E.string (case type_ of
-      Bold -> "bold"
+        Bold   -> "bold"
+        Italic -> "italic"
     ))
     ]
 
