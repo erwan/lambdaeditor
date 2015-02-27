@@ -15,7 +15,7 @@ Elm.Native.DrawUtils.make = function(elm) {
         if (!os) {
             os = document.createElement("div");
             os.id = "le_offscreen";
-            os.setAttribute('style', 'display: inline; position: absolute; top: 0; width: 80000px; height: 100px;');
+            os.setAttribute('style', 'display: inline; position: absolute; top: 0; opacity: 0; width: 80000px; height: 100px;');
             var span = document.createElement("span");
             os.appendChild(span);
             document.body.appendChild(os);
