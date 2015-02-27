@@ -101,6 +101,11 @@ buildDocument : Document -> DocumentView
 buildDocument {blocks} =
   { blockViews = L.map buildBlock blocks }
 
+blockStyle : BlockType -> T.Style
+blockStyle type_ =
+  case type_ of
+    Paragraph -> rawText
+    Section   -> { rawText | height <- Just 20 }
 
 renderBlock : BlockView -> Element
 renderBlock {lineViews} =

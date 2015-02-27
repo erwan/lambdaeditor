@@ -22,13 +22,18 @@ type alias Span =
   }
 
 type SpanType
-  = Bold -- just bold for now
+  = Bold
   | Italic
 
 type alias Block =
   { lines : List Line
   , spans : List Span -- list of spans that qualify the text
+  , type_: BlockType
   }
+
+type BlockType
+  = Paragraph
+  | Section
 
 type alias Document = { blocks : List Block }
 
@@ -58,7 +63,10 @@ blocksDecoder =
 
 blockDecoder : Decoder Block
 blockDecoder =
-  object2 Block linesDecoder ("spans" := list spanDecoder)
+  object3 Block
+     linesDecoder
+     ("spans" := list spanDecoder)
+     ("type" := blockTypeDecoder)
 
 linesDecoder : Decoder (List Line)
 linesDecoder = map (textToLines lineStyle lineSize) ("text" := string)
@@ -78,14 +86,25 @@ spanTypeDecoder =
     _        -> fail "invalid span type"
   )
 
+blockTypeDecoder : Decoder BlockType
+blockTypeDecoder =
+  string `andThen` (\s -> case s of
+    "paragraph" -> succeed Paragraph
+    "section"   -> succeed Section
+    _           -> fail "invalid block type"
+  )
+
 documentEncoder : Document -> Value
 documentEncoder {blocks} =
   E.object [ ("blocks", E.list (L.map blockEncoder blocks)) ]
 
 blockEncoder : Block -> Value
-blockEncoder {lines, spans} =
+blockEncoder {lines, spans, type_} =
   E.object
-    [ ("type", E.string "paragraph")
+    [ ("type", E.string (case type_ of
+        Paragraph -> "paragraph"
+        Section  -> "section"
+      ))
     , ("text", E.string (S.concat lines))
     , ("spans", E.list (L.map spanEncoder spans))
     ]
@@ -98,7 +117,7 @@ spanEncoder {start, end, type_} =
     , ("type", E.string (case type_ of
         Bold   -> "bold"
         Italic -> "italic"
-    ))
+      ))
     ]
 
 {-|  get (block number, line number, position in line) of cursor in blocks -}
