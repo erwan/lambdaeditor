@@ -96,7 +96,7 @@ buildCursor { blocks } blockViews cursor =
 
     cursorElt = cursorElement (lineViewHeight lineView)
   in
-    T.leftAligned <| T.fromString ((toString pixelX) ++ "," ++ (toString pixelY))
+    container (pixelX + 20) (pixelY + 20) (topLeftAt (Absolute pixelX) (Absolute pixelY)) cursorElt
 
 
 hiddenInput : String -> Html
