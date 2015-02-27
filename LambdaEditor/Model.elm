@@ -11,7 +11,19 @@ import Json.Encode as E
 
 type alias Line = String
 
-type alias Block = { lines : List Line }
+type alias Span =
+  { start: Int
+  , end: Int
+  , type_: SpanType
+  }
+
+type SpanType
+  = Bold -- just bold for now
+
+type alias Block =
+  { lines : List Line
+  , spans : List Span -- list of spans that qualify the text
+  }
 
 type alias Document = { blocks : List Block }
 
@@ -41,21 +53,46 @@ blocksDecoder =
 
 blockDecoder : Decoder Block
 blockDecoder =
-  object1 Block
-    (map (textToLines "" 800) ("text" := string))
+  object2 Block linesDecoder ("spans" := list spanDecoder)
+
+linesDecoder : Decoder (List Line)
+linesDecoder = map (textToLines "" 800) ("text" := string)
+
+spanDecoder : Decoder Span
+spanDecoder =
+  object3 Span
+    ("start" := int)
+    ("end" := int)
+    ("type" := spanTypeDecoder)
+
+spanTypeDecoder : Decoder SpanType
+spanTypeDecoder =
+  string `andThen` (\s -> case s of
+    "bold" -> succeed Bold
+    _      -> fail "invalid span type"
+  )
 
 documentEncoder : Document -> Value
 documentEncoder {blocks} =
   E.object [ ("blocks", E.list (L.map blockEncoder blocks)) ]
 
 blockEncoder : Block -> Value
-blockEncoder {lines} =
+blockEncoder {lines, spans} =
   E.object
     [ ("type", E.string "paragraph")
     , ("text", E.string (S.concat lines))
-    , ("spans", E.list [])
+    , ("spans", E.list (L.map spanEncoder spans))
     ]
 
+spanEncoder : Span -> Value
+spanEncoder {start, end, type_} =
+  E.object
+    [ ("start", E.int start)
+    , ("end", E.int end)
+    , ("type", E.string (case type_ of
+      Bold -> "bold"
+    ))
+    ]
 cursorBlockLine: List Block -> Cursor -> (Int, Int, Int)
 cursorBlockLine blocks cursor =
   let

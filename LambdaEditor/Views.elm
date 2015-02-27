@@ -18,7 +18,7 @@ renderLine line =
   div [] [ text line ]
 
 renderBlock : Block -> Html
-renderBlock {lines} =
+renderBlock {lines, spans} =
   div [] (L.map renderLine lines)
 
 renderDocument : Document -> List Html
