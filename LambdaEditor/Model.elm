@@ -246,12 +246,21 @@ insertAtCursor s ({cursor,document} as state) =
 
           newText = S.concat [textBefore, s, textAfter]
           newLines = textToLines (blockStyle block.type_) lineSize newText
+          newSpans = L.map (insertInSpan cursor.x) block.spans
 
           -- TODO update block.spans
-          newBlock = { block | lines <- newLines }
+          newBlock = { block | lines <- newLines, spans <- newSpans }
           allBlocks = L.concat [blocksBefore, [newBlock], blocksAfter]
 
           newDoc = { document | blocks <- allBlocks }
           newCursor = { cursor | x <- cursor.x + 1 }
         in
           { state | document <- newDoc, cursor <- newCursor }
+
+insertInSpan : Int -> Span -> Span
+insertInSpan x ({start,end} as span) =
+  let
+    newStart = if x > start then start else start + 1
+    newEnd = if x > end then end else end + 1
+  in
+    { span | start <- newStart, end <- newEnd }
