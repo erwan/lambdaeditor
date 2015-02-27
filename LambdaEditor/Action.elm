@@ -20,6 +20,8 @@ type Action
     | DeleteNextCharacter
     | MoveLeft
     | MoveRight
+    | MoveUp
+    | MoveDown
 
 iterate : Action -> EditorState -> EditorState
 iterate action state =
@@ -28,5 +30,9 @@ iterate action state =
             { state | cursor <- moveLeft state.document state.cursor }
         MoveRight ->
             { state | cursor <- moveRight state.document state.cursor }
+        MoveUp ->
+            { state | cursor <- moveUp state.document state.cursor }
+        MoveDown ->
+            { state | cursor <- moveDown state.document state.cursor }
         _ -> state
 

@@ -32,6 +32,8 @@ keyarrowToAction {x, y} =
   case (x, y) of
     (-1, _) -> MoveLeft
     (1, _) -> MoveRight
+    (_, -1) -> MoveDown
+    (_, 1) -> MoveUp
     _ -> NoOp
 
 main : Signal Html

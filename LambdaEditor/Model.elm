@@ -156,3 +156,43 @@ moveRight { blocks } cursor =
         { block = cursor.block + 1, x = 0 }
       else
         { block = cursor.block, x = currentBlockLength }
+
+moveUp : Document -> Cursor -> Cursor
+moveUp { blocks } cursor =
+  let
+    (blockNo, lineNo, posInLine) = cursorBlockLine blocks cursor
+    { lines } = lift blockNo blocks |> M.withDefault (L.head blocks)
+  in
+    case (blockNo, lineNo) of
+      (0, 0) -> { block = 0, x = 0 }
+      (_, 0) ->
+        let
+          newBlockNo = min 0 (blockNo - 1)
+          newBlock = lift newBlockNo blocks |> M.withDefault (L.head blocks)
+          startLastLine = L.map S.length (L.take ((L.length newBlock.lines) - 1) newBlock.lines) |> L.sum
+          newX = startLastLine + posInLine
+        in
+          { block = newBlockNo, x = newX }
+      _ ->
+        let
+          prevLine = lift (lineNo - 1) lines |> M.withDefault (L.head lines)
+          newX = cursor.x - (S.length prevLine)
+        in
+          { block = blockNo, x = newX }
+
+moveDown : Document -> Cursor -> Cursor
+moveDown { blocks } cursor =
+  let
+    (blockNo, lineNo, posInLine) = cursorBlockLine blocks cursor
+    block = lift blockNo blocks |> M.withDefault (L.head blocks)
+    line = lift lineNo block.lines |> M.withDefault (L.head block.lines)
+    lastBlockNo = (L.length blocks) - 1
+  in
+    if lineNo >= (L.length block.lines) - 1 then
+      if blockNo >= lastBlockNo then
+        { block = blockNo, x = blockLength block }
+      else
+        { block = blockNo + 1, x = posInLine }
+    else
+      { block = blockNo, x = cursor.x + (S.length line) }
+
