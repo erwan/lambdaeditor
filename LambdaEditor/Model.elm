@@ -9,6 +9,7 @@ import List as L
 import Json.Decode (..)
 import Json.Encode as E
 
+
 -- temp hardcoded values
 lineSize = 800
 -- lineStyle = ""
@@ -49,10 +50,23 @@ type alias EditorState =
   , cursor: Cursor
   }
 
+emptyBlock =
+  { lines = []
+  , spans = []
+  , type_ = Paragraph}
+
 initialState : EditorState
 initialState =
   { document = { blocks = [ ] }
   , cursor = { block = 0, x = 200 }
+  }
+
+type alias CursorDocument =
+  { blocksBefore: List Block
+  , blocksAfter: List Block
+  , cursorBlock: Block
+  , textBefore: String
+  , textAfter: String
   }
 
 blocksDecoder : Decoder (List Block)
@@ -227,35 +241,72 @@ moveDown { blocks } cursor =
     else
       { block = blockNo, x = cursor.x + (S.length line) }
 
-insertAtCursor : String -> EditorState -> EditorState
-insertAtCursor s ({cursor,document} as state) =
+
+cursorize : Cursor -> Document -> CursorDocument
+cursorize cursor {blocks} =
   let
-    blocksBefore = L.take cursor.block document.blocks
-    blocksAfter = L.drop (cursor.block + 1) document.blocks
-    cursorBlockMaybe = lift cursor.block document.blocks
+    blocksBefore = L.take cursor.block blocks
+    blocksAfter = L.drop (cursor.block + 1) blocks
+    cursorBlockMaybe = lift cursor.block blocks
   in
     case cursorBlockMaybe of
       Nothing ->
-        state
+        { blocksBefore = blocksBefore
+        , blocksAfter = blocksAfter
+        , cursorBlock = emptyBlock
+        , textBefore = ""
+        , textAfter = ""
+        }
       Just block ->
         let
           allText = S.concat block.lines
 
           textBefore = S.left cursor.x allText
           textAfter = S.dropLeft cursor.x allText
-
-          newText = S.concat [textBefore, s, textAfter]
-          newLines = textToLines (blockStyle block.type_) lineSize newText
-          newSpans = L.map (insertInSpan cursor.x) block.spans
-
-          -- TODO update block.spans
-          newBlock = { block | lines <- newLines, spans <- newSpans }
-          allBlocks = L.concat [blocksBefore, [newBlock], blocksAfter]
-
-          newDoc = { document | blocks <- allBlocks }
-          newCursor = { cursor | x <- cursor.x + 1 }
         in
-          { state | document <- newDoc, cursor <- newCursor }
+          { blocksBefore = blocksBefore
+          , blocksAfter = blocksAfter
+          , cursorBlock = block
+          , textBefore = textBefore
+          , textAfter = textAfter
+          }
+
+uncursorize : CursorDocument -> (Cursor,Document)
+uncursorize {blocksBefore,blocksAfter,cursorBlock,textBefore,textAfter} =
+  let
+    cursorX = S.length textBefore
+    blockNo = L.length blocksBefore
+
+    newText = S.concat [textBefore, textAfter]
+    newLines = textToLines (blockStyle cursorBlock.type_) lineSize newText
+
+    newBlock = { cursorBlock | lines <- newLines }
+    allBlocks = L.concat [blocksBefore, [newBlock], blocksAfter]
+
+    doc = { blocks = allBlocks }
+    cursor = { block = blockNo, x = cursorX }
+  in
+    (cursor,doc)
+
+
+insertAtCursor : String -> EditorState -> EditorState
+insertAtCursor s ({cursor,document} as state) =
+  let
+    cursorDoc = cursorize cursor document
+    {cursorBlock,textBefore} = cursorDoc
+
+    newSpans = L.map (insertInSpan cursor.x) cursorBlock.spans
+    newCursorBlock = { cursorBlock | spans <- newSpans }
+
+    newCursorDoc = { cursorDoc
+      | textBefore <- (textBefore ++ s)
+      , cursorBlock <- newCursorBlock
+      }
+
+    (newCursor,newDoc) = uncursorize newCursorDoc
+  in
+    { state | document <- newDoc, cursor <- newCursor }
+
 
 insertInSpan : Int -> Span -> Span
 insertInSpan x ({start,end} as span) =
@@ -264,3 +315,54 @@ insertInSpan x ({start,end} as span) =
     newEnd = if x > end then end else end + 1
   in
     { span | start <- newStart, end <- newEnd }
+
+
+-- TODO deal with blocks merge
+deletePreviousCharacter : EditorState -> EditorState
+deletePreviousCharacter ({cursor,document} as state) =
+  let
+    cursorDoc = cursorize cursor document
+    {cursorBlock,textBefore} = cursorDoc
+
+    newTextBefore = S.left (S.length textBefore - 1) textBefore
+    newSpans = L.map (removeFromSpan cursor.x) cursorBlock.spans
+    newCursorBlock = { cursorBlock | spans <- newSpans }
+
+    newCursorDoc = { cursorDoc
+      | textBefore <- newTextBefore
+      , cursorBlock <- newCursorBlock
+      }
+
+    (newCursor,newDoc) = uncursorize newCursorDoc
+  in
+    { state | document <- newDoc, cursor <- newCursor }
+
+
+-- TODO deal with blocks merge
+deleteNextCharacter : EditorState -> EditorState
+deleteNextCharacter ({cursor,document} as state) =
+  let
+    cursorDoc = cursorize cursor document
+    {cursorBlock,textAfter} = cursorDoc
+
+    newTextAfter = S.right (S.length textAfter - 1) textAfter
+    newSpans = L.map (removeFromSpan (cursor.x + 1)) cursorBlock.spans
+    newCursorBlock = { cursorBlock | spans <- newSpans }
+
+    newCursorDoc = { cursorDoc
+      | textAfter <- newTextAfter
+      , cursorBlock <- newCursorBlock
+      }
+
+    (newCursor,newDoc) = uncursorize newCursorDoc
+  in
+    { state | document <- newDoc, cursor <- newCursor }
+
+removeFromSpan : Int -> Span -> Span
+removeFromSpan x ({start,end} as span) =
+  let
+    newStart = if x > start then start else start - 1
+    newEnd = if x > end then end else end - 1
+  in
+    { span | start <- newStart, end <- newEnd }
+

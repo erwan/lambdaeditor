@@ -9,6 +9,7 @@ import String as S
 import List as L
 import Json.Decode as Json
 
+
 -- See in the state where the cursor is located to know where the operation should be applied
 type Action
     = NoOp
@@ -23,6 +24,19 @@ type Action
     | MoveUp
     | MoveDown
 
+
+keyboardAction : Int -> Action
+keyboardAction code =
+  case code of
+    8  -> DeletePreviousCharacter
+    46 -> DeleteNextCharacter
+    38 -> MoveUp
+    40 -> MoveDown
+    37 -> MoveLeft
+    39 -> MoveRight
+    _  -> NoOp
+
+
 iterate : Action -> EditorState -> EditorState
 iterate action state =
   case action of
@@ -36,4 +50,8 @@ iterate action state =
       { state | cursor <- moveDown state.document state.cursor }
     UpdateFromBuffer s ->
       insertAtCursor s state
+    DeletePreviousCharacter ->
+      deletePreviousCharacter state
+    DeleteNextCharacter ->
+      deleteNextCharacter state
     _ -> state

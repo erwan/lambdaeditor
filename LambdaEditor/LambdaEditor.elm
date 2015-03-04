@@ -25,16 +25,8 @@ stateWithSetup =
       in
         { initialState | document <- document }
 
--- MAIN BLOCK
 
-keyarrowToAction : {x: Int, y: Int} -> Action
-keyarrowToAction {x, y} =
-  case (x, y) of
-    (-1, _) -> MoveLeft
-    (1, _) -> MoveRight
-    (_, -1) -> MoveDown
-    (_, 1) -> MoveUp
-    _ -> NoOp
+-- MAIN BLOCK
 
 main : Signal Html
 main = Signal.map view model
@@ -42,7 +34,7 @@ main = Signal.map view model
 updates : Signal Action
 updates = Signal.mergeMany [
     Signal.subscribe updatesChannel,
-    Signal.map keyarrowToAction Keyboard.arrows
+    Signal.map keyboardAction Keyboard.lastPressed
     ]
 
 model : Signal EditorState

@@ -157,7 +157,6 @@ buildCursor { blocks } {blockViews} cursor =
   in
     container (pixelX + 20) (pixelY + 20) (topLeftAt (Absolute pixelX) (Absolute pixelY)) cursorElt
 
-
 hiddenInput : Html
 hiddenInput =
   input
